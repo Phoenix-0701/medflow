@@ -1,224 +1,267 @@
-// app/patient/profile/page.tsx
+// app/patient/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
-interface PatientProfileData {
-  fullName: string;
-  email: string;
-  phone: string;
-  patientProfile?: {
-    dateOfBirth?: string;
-    gender?: string;
-    height?: number;
-    weight?: number;
-    bloodType?: string;
-    medicalHistory?: string;
-  };
-}
-
-export default function PatientProfilePage() {
-  const [profile, setProfile] = useState<PatientProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function PatientDashboardPage() {
+  const [userName, setUserName] = useState("Sarah");
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
       try {
-        const token = localStorage.getItem("accessToken");
-        const res = await fetch("http://localhost:4000/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setProfile(data);
-        }
-      } catch (err) {
-        console.error("Lỗi fetch profile:", err);
-      } finally {
-        setLoading(false);
+        const u = JSON.parse(savedUser);
+        if (u.fullName) setUserName(u.fullName.split(" ")[0]);
+      } catch (e) {
+        console.error(e);
       }
-    };
-
-    fetchProfile();
+    }
   }, []);
 
-  const fullName = profile?.fullName || "Robert Jenkins";
-  const gender = profile?.patientProfile?.gender || "Male";
-  const height = profile?.patientProfile?.height || 182;
-  const weight = profile?.patientProfile?.weight || 84.5;
-  const bloodType = profile?.patientProfile?.bloodType || "O Positive (O+)";
-
   return (
-    <div className="flex flex-col gap-6 max-w-6xl mx-auto">
-      {/* Title + Edit Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-            Patient Profile
-          </h1>
-          <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-            Manage and review patient health data.
-          </p>
-        </div>
+    <div className="-m-8 flex min-h-screen flex-col bg-[#f8f9fc] text-gray-900 font-sans dark:bg-zinc-950 dark:text-white">
+     
 
-        <button className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 shadow-2xs hover:bg-gray-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 cursor-pointer">
-          ✏️ Edit Profile
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Personal Vitals Card */}
-        <div className="lg:col-span-5 flex flex-col gap-5">
-          {/* Main User Card */}
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 flex flex-col items-center text-center">
-            <div className="h-28 w-28 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center text-gray-400 font-bold text-xl mb-4 shadow-inner">
-              img
-            </div>
-            <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
-              {fullName}
-            </h2>
-            <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1 font-medium">
-              45 yrs • {gender}
+      {/* 2. MAIN CONTENT AREA */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-10 flex flex-col gap-8">
+        {/* Hero Banner Box */}
+        <div className="overflow-hidden rounded-2xl bg-[#e8eef7] dark:bg-zinc-900 border border-blue-100/60 dark:border-zinc-800 grid grid-cols-1 md:grid-cols-12 items-center">
+          <div className="p-8 sm:p-12 md:col-span-7 flex flex-col items-start">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
+              How are you feeling today, <br />
+              {userName}?
+            </h1>
+            <p className="mt-4 text-xs sm:text-sm text-gray-600 dark:text-zinc-300 leading-relaxed max-w-lg">
+              Our AI Triage system is ready to help assess your symptoms and guide you to the right care, instantly.
             </p>
 
-            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-mono font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-              🆔 ID: MRN-84729-A
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button className="rounded-xl bg-[#004bb4] px-5 py-3 text-xs font-bold text-white shadow-md hover:bg-blue-800 transition-all cursor-pointer">
+                Start AI Health Consultation
+              </button>
+              <button className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-xs font-bold text-[#004bb4] shadow-2xs hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-blue-300 cursor-pointer">
+                Book Standard Appointment
+              </button>
             </div>
           </div>
 
-          {/* Vitals Grid: Height & Weight */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900">
-              <span className="text-emerald-600 text-lg">↕</span>
-              <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase mt-2">
-                HEIGHT
-              </p>
-              <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-1">
-                {height} <span className="text-xs font-normal text-gray-400">cm</span>
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900">
-              <span className="text-blue-600 text-lg">⌛</span>
-              <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase mt-2">
-                WEIGHT
-              </p>
-              <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-1">
-                {weight} <span className="text-xs font-normal text-gray-400">kg</span>
-              </p>
+          {/* Banner Graphic Placeholder */}
+          <div className="md:col-span-5 h-64 md:h-full bg-gradient-to-tr from-[#d5e2f5] via-[#e2ecf9] to-[#edf3fc] dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center p-6">
+            <div className="relative flex h-40 w-40 items-center justify-center rounded-full bg-blue-500/10 backdrop-blur-md border border-blue-300/30 shadow-inner">
+              <span className="text-6xl animate-pulse">🌐</span>
             </div>
           </div>
+        </div>
 
-          {/* Blood Type Card */}
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 flex items-center justify-between">
+        {/* Two Columns Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* LEFT COLUMN: Upcoming Appointments & Recent Health Insights */}
+          <div className="lg:col-span-8 flex flex-col gap-8">
+            {/* Upcoming Appointments */}
             <div>
-              <span className="text-rose-600 text-lg">🩸</span>
-              <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase mt-1">
-                BLOOD TYPE
-              </p>
-              <p className="text-base font-extrabold text-gray-900 dark:text-white mt-1">
-                {bloodType}
-              </p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Upcoming Appointments
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Appointment Card 1 */}
+                <div className="relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 flex flex-col justify-between">
+                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-[#004bb4] rounded-l-2xl" />
+                  <div>
+                    <div className="flex items-center justify-between pl-2">
+                      <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                        Confirmed
+                      </span>
+                      <button className="text-gray-400 hover:text-gray-600 font-bold">
+                        ⋮
+                      </button>
+                    </div>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white mt-3 pl-2">
+                      Dr. Emily Chen
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 pl-2">
+                      Cardiology Follow-up
+                    </p>
+                  </div>
+
+                  <div className="mt-5 border-t border-gray-100 pt-3 dark:border-zinc-800 text-xs text-gray-600 dark:text-zinc-300 flex flex-col gap-2 pl-2">
+                    <div className="flex items-center gap-2.5">
+                      <span>📅</span> Oct 24, 2024
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span>🕒</span> 10:30 AM
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span>📹</span> Telehealth
+                    </div>
+                  </div>
+                </div>
+
+                {/* Appointment Card 2 */}
+                <div className="relative rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 flex flex-col justify-between">
+                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-gray-300 rounded-l-2xl dark:bg-zinc-700" />
+                  <div>
+                    <div className="flex items-center justify-between pl-2">
+                      <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        Pending
+                      </span>
+                      <button className="text-gray-400 hover:text-gray-600 font-bold">
+                        ⋮
+                      </button>
+                    </div>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white mt-3 pl-2">
+                      Dr. Marcus Webb
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 pl-2">
+                      General Physical
+                    </p>
+                  </div>
+
+                  <div className="mt-5 border-t border-gray-100 pt-3 dark:border-zinc-800 text-xs text-gray-600 dark:text-zinc-300 flex flex-col gap-2 pl-2">
+                    <div className="flex items-center gap-2.5">
+                      <span>📅</span> Nov 12, 2024
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span>🕒</span> 2:00 PM
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span>📍</span> Main Clinic, Rm 302
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:bg-rose-950/50 dark:text-rose-300">
-              Verified
+
+            {/* Recent Health Insights */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Recent Health Insights
+                </h2>
+                <button className="text-xs font-bold text-[#004bb4] hover:underline dark:text-blue-400">
+                  View History
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-600 dark:bg-teal-950 dark:text-teal-300 text-lg">
+                  🌱
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-gray-900 dark:text-white">
+                    AI Symptom Check: Headaches
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-zinc-300 mt-1 leading-relaxed">
+                    Based on your log yesterday, the AI suggests increasing water intake and monitoring screen time. No red flag symptoms detected.
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-2">
+                    Yesterday, 4:15 PM
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Reminders & Quick Access */}
+          <div className="lg:col-span-4 flex flex-col gap-8">
+            {/* Reminders */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Reminders
+              </h2>
+
+              <div className="flex flex-col gap-3">
+                {/* Reminder Item 1 */}
+                <div className="rounded-2xl border border-rose-200/80 bg-[#fde8e8] p-4.5 dark:border-rose-950 dark:bg-rose-950/40">
+                  <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-xs">
+                    <span>⚠️</span> Prescription Refill Needed
+                  </div>
+                  <p className="text-[11px] text-rose-700/80 dark:text-rose-300/80 mt-1">
+                    Lisinopril 10mg is running low (4 days left).
+                  </p>
+                  <button className="mt-3 text-xs font-bold text-rose-800 underline hover:text-rose-900 dark:text-rose-300">
+                    Request Refill
+                  </button>
+                </div>
+
+                {/* Reminder Item 2 */}
+                <div className="rounded-2xl border border-gray-200/80 bg-white p-4.5 dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="flex items-center gap-2 text-[#004bb4] dark:text-blue-400 font-bold text-xs">
+                    <span>ℹ️</span> Lab Results Available
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-zinc-400 mt-1">
+                    Your recent blood panel results have been uploaded by Dr. Chen.
+                  </p>
+                  <button className="mt-3 text-xs font-bold text-[#004bb4] underline hover:text-blue-800 dark:text-blue-400">
+                    View Results
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Access */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                Quick Access
+              </h2>
+
+              <div className="flex flex-col gap-2.5">
+                <Link
+                  href="/patient/profile"
+                  className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white px-4 py-3.5 text-xs font-bold text-gray-800 shadow-2xs hover:bg-gray-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-colors"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-sm">📋</span> Medical Records
+                  </span>
+                  <span className="text-gray-400">›</span>
+                </Link>
+
+                <div className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white px-4 py-3.5 text-xs font-bold text-gray-800 shadow-2xs hover:bg-gray-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-colors cursor-pointer">
+                  <span className="flex items-center gap-3">
+                    <span className="text-sm">💊</span> Medications
+                  </span>
+                  <span className="text-gray-400">›</span>
+                </div>
+
+                <div className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white px-4 py-3.5 text-xs font-bold text-gray-800 shadow-2xs hover:bg-gray-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white transition-colors cursor-pointer">
+                  <span className="flex items-center gap-3">
+                    <span className="text-sm">💳</span> Billing & Insurance
+                  </span>
+                  <span className="text-gray-400">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* 3. FOOTER */}
+      <footer className="border-t border-gray-200/80 bg-white px-8 py-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-zinc-400">
+          <div className="flex items-center gap-4">
+            <span className="font-extrabold text-[#1a4b8c] dark:text-blue-400 text-sm">
+              MedFlow AI
             </span>
+            <span>© 2024 MedFlow AI Healthcare. Clinical Grade Intelligence.</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <Link href="#" className="hover:underline">
+              Privacy Policy
+            </Link>
+            <Link href="#" className="hover:underline">
+              Terms of Service
+            </Link>
+            <Link href="#" className="hover:underline">
+              HIPAA Compliance
+            </Link>
+            <Link href="#" className="hover:underline">
+              Contact Support
+            </Link>
           </div>
         </div>
-
-        {/* Right Column: Medical History & Account Settings */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* Medical History Timeline */}
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-zinc-800">
-              <h3 className="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                🩺 Medical History
-              </h3>
-              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                ✨ AI Summarized
-              </span>
-            </div>
-
-            <div className="relative pl-6 flex flex-col gap-6 border-l-2 border-gray-100 dark:border-zinc-800 ml-2">
-              <div>
-                <div className="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-blue-600 bg-white dark:bg-zinc-900" />
-                <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                  Type 2 Diabetes Mellitus
-                </h4>
-                <p className="text-[11px] text-gray-400 mt-0.5">Diagnosed: Oct 2018</p>
-                <p className="text-xs text-gray-600 dark:text-zinc-300 mt-2 leading-relaxed">
-                  Currently managed with Metformin 500mg twice daily. HbA1c stable at 6.8% as of last checkup.
-                </p>
-              </div>
-
-              <div>
-                <div className="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-gray-300 bg-white dark:bg-zinc-900" />
-                <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                  Hypertension
-                </h4>
-                <p className="text-[11px] text-gray-400 mt-0.5">Diagnosed: May 2015</p>
-                <p className="text-xs text-gray-600 dark:text-zinc-300 mt-2 leading-relaxed">
-                  Controlled with Lisinopril 10mg daily. Recent BP readings average 125/80 mmHg.
-                </p>
-              </div>
-
-              <div>
-                <div className="absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-gray-300 bg-white dark:bg-zinc-900" />
-                <h4 className="text-xs font-bold text-gray-900 dark:text-white">
-                  Appendectomy
-                </h4>
-                <p className="text-[11px] text-gray-400 mt-0.5">Surgical: Jun 2005</p>
-                <p className="text-xs text-gray-600 dark:text-zinc-300 mt-2 leading-relaxed">
-                  Uncomplicated laparoscopic procedure. No residual issues reported.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Account Settings */}
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-extrabold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              ⚙️ Account Settings
-            </h3>
-
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-xl border border-gray-200/70 p-3.5 dark:border-zinc-800 flex items-start gap-3">
-                  <span className="text-base">🔒</span>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">Change Password</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Update credentials and security protocols.</p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-gray-200/70 p-3.5 dark:border-zinc-800 flex items-start gap-3">
-                  <span className="text-base">🌐</span>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">Language & Region</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Set to English (US). Timezone: EST.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Toggle Switch Clinical Notifications */}
-              <div className="rounded-xl border border-gray-200/70 p-3.5 dark:border-zinc-800 flex items-center justify-between">
-                <div className="flex items-start gap-3">
-                  <span className="text-base">🔔</span>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">Clinical Notifications</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Receive alerts for abnormal lab results and AI triage updates.</p>
-                  </div>
-                </div>
-
-                <div className="h-6 w-11 rounded-full bg-blue-700 p-0.5 cursor-pointer flex items-center justify-end shadow-2xs">
-                  <div className="h-5 w-5 rounded-full bg-white shadow-md" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      </footer>
     </div>
   );
 }

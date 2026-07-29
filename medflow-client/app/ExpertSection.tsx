@@ -22,7 +22,7 @@ export default function ExpertSection() {
   useEffect(() => {
     async function loadDoctors() {
       try {
-        // Gọi API Public của backend NestJS
+        
         const res = await fetch("http://localhost:4000/users/public/doctors?limit=4");
         if (res.ok) {
           const data = await res.json();
