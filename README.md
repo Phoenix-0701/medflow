@@ -1,3 +1,13 @@
+---
+title: "Bản đề xuất"
+date: 2024-01-01
+weight: 2
+chapter: false
+pre: " <b> 2. </b> "
+---
+
+Tại phần này, bạn sẽ thấy bản tóm tắt đề xuất dự án phát triển hệ thống Y tế số, bao gồm mục tiêu, kiến trúc hạ tầng AWS Cloud, luồng nghiệp vụ cốt lõi và ước tính ngân sách vận hành.
+
 # Smart Healthcare AI Triage & Appointment Booking Platform  
 ## Giải pháp Cloud-native hỗ trợ Sàng lọc Bệnh Y khoa qua AI và Quản lý Lịch hẹn Trực tuyến  
 
@@ -95,5 +105,3 @@ Chi phí hạ tầng được ước tính trên môi trường AWS Cloud & AI S
 ### 8. Kết quả kỳ vọng  
 - **Cải tiến kỹ thuật:** Tự động hóa giải đáp thắc mắc y tế ban đầu cho bệnh nhân bằng RAG AI chính xác; đạt chỉ số sẵn sàng của hệ thống > 99.9% trên nền tảng AWS Cloud.  
 - **Giá trị thực tế:** Cung cấp giải pháp đặt lịch khám minh bạch, chính xác, giúp bệnh nhân chủ động thời gian và giúp bác sĩ dễ dàng quản lý danh sách ca khám.
- 
- 
