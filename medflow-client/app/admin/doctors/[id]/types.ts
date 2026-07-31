@@ -10,15 +10,25 @@ export interface DoctorDetail {
   id: string;
   fullName: string;
   title: string; // VD: Trưởng Khoa Tim Mạch
+  specialty: string;
+  department: string;
   email: string;
   phone: string;
   docCode: string; // VD: DOC-8472
+  licenseNumber: string;
   status: "ACTIVE" | "INACTIVE";
   avatar: string;
   totalPatients: number;
   yearsOfExperience: number;
   bio: string;
-  education: EducationItem[];
+  averageRating: number;
+  reviews: Array<{
+    id: string;
+    rating: number;
+    reviewText: string;
+    createdAt: string;
+    patientName: string;
+  }>;
 }
 
 export interface RecentAppointment {

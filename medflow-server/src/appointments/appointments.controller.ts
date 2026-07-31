@@ -18,6 +18,7 @@ import { UpdateAppointmentStatusDto } from './dto/update-status.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UpdateNotesDto } from './dto/update-notes.dto';
+import { ReviewAppointmentDto } from './dto/review-appointment.dto';
 
 @Controller('appointments')
 @UseGuards(JwtAuthGuard)
@@ -133,6 +134,34 @@ export class AppointmentsController {
     );
   }
 
+  @Patch(':id/review')
+  async reviewAppointment(
+    @Param('id') appointmentId: string,
+    @Body() dto: ReviewAppointmentDto,
+    @CurrentUser() user: User,
+  ) {
+    if (user.role !== Role.PATIENT) {
+      throw new ForbiddenException('Chỉ bệnh nhân mới có quyền đánh giá.');
+    }
+
+    const patientProfile = await this.appointmentsService[
+      'prisma'
+    ].patientProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (!patientProfile) {
+      throw new BadRequestException('Không tìm thấy hồ sơ bệnh nhân.');
+    }
+
+    return this.appointmentsService.reviewAppointment(
+      patientProfile.id,
+      appointmentId,
+      dto.rating,
+      dto.reviewText,
+    );
+  }
+
   // --- API GHI BỆNH ÁN (DÀNH CHO BÁC SĨ) ---
   @Patch(':id/notes')
   async updateNotes(
@@ -157,6 +186,24 @@ export class AppointmentsController {
       appointmentId,
       dto,
     );
+  }
+
+  // --- API QUẢN LÝ BỆNH NHÂN (DÀNH CHO BÁC SĨ) ---
+  @Get('doctor-patients')
+  async getDoctorPatients(@CurrentUser() user: User) {
+    if (user.role !== Role.DOCTOR) {
+      throw new ForbiddenException(
+        'Chỉ bác sĩ mới có quyền xem danh sách bệnh nhân.',
+      );
+    }
+
+    const doctorProfile = await this.appointmentsService[
+      'prisma'
+    ].doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    return this.appointmentsService.getDoctorPatients(doctorProfile.id);
   }
 
   // --- API XEM LỊCH KHÁM (DÀNH CHO BÁC SĨ) ---

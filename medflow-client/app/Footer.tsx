@@ -6,7 +6,7 @@ export default function Footer() {
         {/* Col 1: Brand */}
         <div className="flex flex-col gap-3">
           <h3 className="text-base font-bold text-blue-600 dark:text-blue-500">
-            MedFlow AI
+            BKMed AI
           </h3>
           <p className="leading-relaxed">
             Hệ thống y tế tích hợp AI hàng đầu giúp phân loại bệnh, đặt lịch khám và quản lý hồ sơ sức khỏe thông minh, an toàn và bảo mật.
@@ -46,13 +46,13 @@ export default function Footer() {
           <ul className="flex flex-col gap-2">
             <li>📍 Ho Chi Minh City, Vietnam</li>
             <li>📞 1900 xxxx (Hỗ trợ 24/7)</li>
-            <li>✉️ support@medflow.ai</li>
+            <li>✉️ support@BKMed.ai</li>
           </ul>
         </div>
       </div>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-6 border-t border-gray-100 dark:border-zinc-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px]">
-        <p>© 2026 MedFlow AI Healthcare. Clinical Grade Intelligence.</p>
+        <p>© 2026 BKMed AI Healthcare. Clinical Grade Intelligence.</p>
         <div className="flex gap-4">
           <a href="#" className="hover:underline">Privacy Policy</a>
           <a href="#" className="hover:underline">Terms of Service</a>

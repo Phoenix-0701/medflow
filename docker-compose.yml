@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  medflow-ai:
+    build:
+      context: ./medflow-ai
+      dockerfile: Dockerfile
+    container_name: medflow-ai
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      - GRPC_HOST=0.0.0.0
+    env_file:
+      - ./medflow-ai/.env
+    # Cấu hình tự động restart khi sập
+    restart: unless-stopped
+
+  medflow-server:
+    build:
+      context: ./medflow-server
+      dockerfile: Dockerfile
+    container_name: medflow-server
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./medflow-server/.env
+    restart: unless-stopped
+    depends_on:
+      - medflow-ai
+
+  medflow-client:
+    build:
+      context: ./medflow-client
+      dockerfile: Dockerfile
+    container_name: medflow-client
+    ports:
+      - "3000:3000"
+    environment:
+      # Nếu client cần env
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - medflow-server

@@ -26,6 +26,10 @@ export class AdminController {
     @Body('phone') phone: string,
     @Body('specialty') specialty: string,
     @Body('department') department: string,
+    @Body('password') password?: string,
+    @Body('licenseNumber') licenseNumber?: string,
+    @Body('avatarUrl') avatarUrl?: string,
+    @Body('yearsOfExperience') yearsOfExperience?: number,
   ) {
     return this.adminService.createDoctorAccount(
       email,
@@ -33,6 +37,29 @@ export class AdminController {
       phone,
       specialty,
       department,
+      password,
+      licenseNumber,
+      avatarUrl,
+      yearsOfExperience,
+    );
+  }
+
+  @Post('patients')
+  createPatient(
+    @Body('email') email: string,
+    @Body('fullName') fullName: string,
+    @Body('phone') phone: string,
+    @Body('password') password?: string,
+    @Body('dateOfBirth') dateOfBirth?: string,
+    @Body('gender') gender?: string,
+  ) {
+    return this.adminService.createPatientAccount(
+      email,
+      fullName,
+      phone,
+      password,
+      dateOfBirth ? new Date(dateOfBirth) : undefined,
+      gender,
     );
   }
 
@@ -40,6 +67,19 @@ export class AdminController {
   @Get('users')
   getAllUsers() {
     return this.adminService.getAllUsers();
+  }
+
+  @Get('doctors/:id')
+  getDoctorDetails(@Param('id') id: string) {
+    return this.adminService.getDoctorDetails(id);
+  }
+
+  @Patch('doctors/:id')
+  updateDoctorProfile(
+    @Param('id') id: string,
+    @Body() data: { fullName?: string; phone?: string; specialty?: string; department?: string; isActive?: boolean; bio?: string; yearsOfExperience?: number; licenseNumber?: string; avatarUrl?: string }
+  ) {
+    return this.adminService.updateDoctorProfile(id, data);
   }
 
   // API 2: Đảo trạng thái Khóa/Mở khóa tài khoản

@@ -24,6 +24,13 @@ export default function ChatWidget() {
     setInputValue("");
   }, []);
 
+  // Lắng nghe sự kiện mở chat từ các component khác
+  useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener("open-ai-chat", handleOpenChat);
+    return () => window.removeEventListener("open-ai-chat", handleOpenChat);
+  }, []);
+
   // Lắng nghe phím Esc để đóng chat khi đang mở
   useEffect(() => {
     if (!isOpen) return;
@@ -75,35 +82,63 @@ export default function ChatWidget() {
     return () => window.removeEventListener("storage", checkUserContext);
   }, []);
 
-  // 2. Quản lý Session độc lập cho từng User ID
+  // 2. Quản lý Session độc lập cho từng User ID và khôi phục lịch sử chat
   useEffect(() => {
     if (!userId) return;
     const sessionKey = `bkmed_chat_session_${userId}`;
     let savedSessionId = localStorage.getItem(sessionKey);
     
     if (!savedSessionId) {
-      savedSessionId = crypto.randomUUID();
+      savedSessionId = (window.crypto && window.crypto.randomUUID) 
+        ? window.crypto.randomUUID() 
+        : (Math.random().toString(36).substring(2) + Date.now().toString(36));
       localStorage.setItem(sessionKey, savedSessionId);
     }
     
     setSessionId(savedSessionId);
+
+    // Khôi phục tin nhắn
+    const msgKey = `bkmed_chat_messages_${userId}`;
+    const savedMsgStr = localStorage.getItem(msgKey);
+    if (savedMsgStr) {
+      try {
+        const savedMsg = JSON.parse(savedMsgStr);
+        if (Array.isArray(savedMsg) && savedMsg.length > 0) {
+          setMessages(savedMsg);
+        } else {
+          setMessages([defaultGreeting]);
+        }
+      } catch (e) {
+        setMessages([defaultGreeting]);
+      }
+    } else {
+      setMessages([defaultGreeting]);
+    }
   }, [userId]);
+
+  // 3. Lưu tin nhắn vào localStorage mỗi khi có thay đổi
+  useEffect(() => {
+    if (!userId || messages.length === 0) return;
+    const msgKey = `bkmed_chat_messages_${userId}`;
+    localStorage.setItem(msgKey, JSON.stringify(messages));
+  }, [messages, userId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
 
-  // Nếu người dùng là Bác sĩ hoặc Admin thì ẩn hoàn toàn Chatbot
-  if (userRole === "DOCTOR" || userRole === "ADMIN") {
-    return null;
-  }
-
-  // Tính năng bắt đầu hội thoại mới cho Bệnh nhân
+  // Tính năng bắt đầu hội thoại mới
   const handleResetChat = () => {
     if (isStreaming || !userId) return;
     const newSessionId = crypto.randomUUID();
     const sessionKey = `bkmed_chat_session_${userId}`;
+    const msgKey = `bkmed_chat_messages_${userId}`;
+    
     localStorage.setItem(sessionKey, newSessionId);
+    localStorage.removeItem(msgKey); // Xóa lịch sử cũ
+    localStorage.removeItem('aiTriage'); // Xóa luôn gợi ý khoa cũ
+    localStorage.removeItem('chatSessionId');
+    
     setSessionId(newSessionId);
     setMessages([defaultGreeting]);
   };
@@ -161,13 +196,16 @@ export default function ChatWidget() {
               } catch (e) {
                 // Không phải chuỗi JSON thì giữ nguyên string
               }
+
               setMessages((prev) => {
                 const newArr = [...prev];
                 const lastIdx = newArr.length - 1;
                 if (lastIdx >= 0 && newArr[lastIdx].sender === "bot") {
+                  let updatedText = newArr[lastIdx].text + token;
+
                   newArr[lastIdx] = {
                     ...newArr[lastIdx],
-                    text: newArr[lastIdx].text + token,
+                    text: updatedText,
                   };
                 }
                 return newArr;
@@ -312,7 +350,7 @@ export default function ChatWidget() {
                 🤖
               </div>
               <div>
-                <h4 className="text-base font-bold">MedFlow AI Assistant</h4>
+                <h4 className="text-base font-bold">BKMed AI Assistant</h4>
                 <p className="text-xs text-blue-100">
                   {isStreaming ? "AI đang trả lời..." : "Online • Trợ lý 24/7"}
                 </p>

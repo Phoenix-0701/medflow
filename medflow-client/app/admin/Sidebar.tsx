@@ -8,10 +8,10 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "Management", href: "/admin", icon: "📊" },
-    { name: "Doctors", href: "/admin/doctors", icon: "🏥" },
-    { name: "Patients", href: "/admin/patients", icon: "👥" },
-    { name: "System Settings", href: "/admin/settings", icon: "⚙️" },
+    { name: "Trang chủ", href: "/admin", icon: "📊" },
+    { name: "Bác sĩ", href: "/admin/doctors", icon: "🏥" },
+    { name: "Bệnh nhân", href: "/admin/patients", icon: "👥" },
+    { name: "Cài đặt", href: "/admin/settings", icon: "⚙️" },
   ];
 
   return (

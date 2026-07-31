@@ -109,29 +109,6 @@ export default function LoginForm({ onSubmit, loading, error }: LoginFormProps) 
         </button>
       </form>
 
-      {/* Divider */}
-      <div className="relative my-6 flex items-center justify-center">
-        <div className="w-full border-t border-gray-200 dark:border-zinc-800" />
-        <span className="absolute bg-white px-3 text-[11px] font-medium text-gray-400 dark:bg-zinc-900">
-          Or continue with
-        </span>
-      </div>
-
-      {/* Social Login Buttons */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          className="flex min-h-[42px] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50/50 text-xs font-semibold text-gray-700 hover:bg-gray-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-        >
-          <span className="font-bold text-gray-500">GOOGLE</span> Google
-        </button>
-        <button
-          type="button"
-          className="flex min-h-[42px] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50/50 text-xs font-semibold text-gray-700 hover:bg-gray-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-        >
-          <span className="text-base"></span> Apple
-        </button>
-      </div>
     </div>
   );
 }

@@ -10,6 +10,10 @@ export class UpdateProfileDto {
   @IsString()
   phone?: string;
 
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
   // --- THÔNG TIN DÀNH CHO BỆNH NHÂN ---
   @IsOptional()
   @IsDateString()

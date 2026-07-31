@@ -3,7 +3,7 @@ chcp 65001 > nul
 set PYTHONIOENCODING=utf-8
 set PYTHONUNBUFFERED=1
 echo ========================================================
-echo       Khoi dong MedFlow AI Microservice (Port 8080)
+echo       Khoi dong MedFlow AI Microservice
 echo ========================================================
 echo.
 
@@ -14,7 +14,6 @@ if not exist "venv\Scripts\activate.bat" (
     python -m venv venv
 )
 call .\venv\Scripts\activate.bat
-echo [*] Kiem tra va bo sung thu vien AI con thieu (requirements.txt)...
 pip install --quiet -r requirements.txt
 
 echo [1/2] Dang khoi dong AI Backend (gRPC Server)...
@@ -27,6 +26,6 @@ start "MedFlow AI - Gateway (8080)" cmd /k ".\venv\Scripts\activate.bat && uvico
 
 echo.
 echo ========================================================
-echo Hoan tat! Dich vu AI da san sang tren cong 8080.
+echo Hoan tat! Dich vu AI da san sang.
 echo ========================================================
 pause

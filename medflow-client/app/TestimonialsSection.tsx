@@ -1,22 +1,47 @@
 // app/TestimonialsSection.tsx
+"use client";
+
+import { useEffect, useState } from "react";
+
+interface Review {
+  name: string;
+  comment: string;
+  stars: number;
+}
+
 export default function TestimonialsSection() {
-  const reviews = [
-    {
-      name: "Minh Hùng",
-      comment: "Tôi rất ấn tượng với AI Triage. Chỉ sau 2 phút, tôi đã biết mình cần đi khám chuyên khoa nào mà không cần mất thời gian tìm kiếm thông tin không chính thống trên mạng. Bác sĩ tư vấn rất tận tâm!",
-      stars: 5,
-    },
-    {
-      name: "Hoàng Nam",
-      comment: "Trải nghiệm đặt lịch rất mượt mà. Đơn thuốc điện tử và thông tin ca khám đều được tự động lưu trữ trên tài khoản cá nhân, rất tiện lợi để theo dõi sức khỏe gia đình.",
-      stars: 5,
-    },
-    {
-      name: "Hồng Vân",
-      comment: "Ứng dụng dễ sử dụng, thiết kế trực quan. Nhờ sự gợi ý của AI mà tôi phát hiện sớm tình trạng bệnh và được bác sĩ can thiệp kịp thời. Rất biết ơn đội ngũ!",
-      stars: 5,
-    },
-  ];
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000"}/users/public/reviews`);
+        if (res.ok) {
+          const json = await res.json();
+          const responseData = json.data || json;
+          if (responseData && Array.isArray(responseData)) {
+            const mappedReviews = responseData.map((item: any) => ({
+              name: item.patient?.user?.fullName || "Bệnh nhân ẩn danh",
+              comment: item.reviewText || "",
+              stars: item.rating || 5,
+            }));
+            setReviews(mappedReviews);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch reviews:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchReviews();
+  }, []);
+
+  if (loading) {
+    return <div className="py-20 text-center">Loading reviews...</div>;
+  }
 
   return (
     <section className="py-20 bg-gray-50/50 dark:bg-zinc-900/50 border-t border-gray-100 dark:border-zinc-800">

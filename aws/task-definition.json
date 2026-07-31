@@ -1,0 +1,118 @@
+{
+    "family": "medflow-task",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048",
+    "executionRoleArn": "arn:aws:iam::258174056716:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "name": "medflow-client",
+            "image": "258174056716.dkr.ecr.ap-southeast-2.amazonaws.com/medflow-client:latest",
+            "portMappings": [
+                {
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "NODE_ENV",
+                    "value": "production"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/medflow-task",
+                    "awslogs-region": "ap-southeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        },
+        {
+            "name": "medflow-server",
+            "image": "258174056716.dkr.ecr.ap-southeast-2.amazonaws.com/medflow-server:latest",
+            "portMappings": [
+                {
+                    "containerPort": 4000,
+                    "hostPort": 4000,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                { "name": "DATABASE_URL", "value": "postgresql://postgres:healthcare@healthcare-db.cdu4ym0ac08t.ap-southeast-2.rds.amazonaws.com:5432/postgres?schema=public" },
+                { "name": "AWS_REGION", "value": "ap-southeast-2" },
+                { "name": "COGNITO_USER_POOL_ID", "value": "ap-southeast-2_fReigdbzZ" },
+                { "name": "COGNITO_CLIENT_ID", "value": "5jdilvi940qlhbmvpccuc3vhb8" },
+                { "name": "AWS_BUCKET_NAME", "value": "medflow-profile-image" }
+            ],
+            "secrets": [
+                {
+                    "name": "COGNITO_CLIENT_SECRET",
+                    "valueFrom": "arn:aws:ssm:ap-southeast-2:258174056716:parameter/COGNITO_CLIENT_SECRET"
+                },
+                {
+                    "name": "AWS_ACCESS_KEY_ID",
+                    "valueFrom": "arn:aws:ssm:ap-southeast-2:258174056716:parameter/ACCESS_KEY_ID"
+                },
+                {
+                    "name": "AWS_SECRET_ACCESS_KEY",
+                    "valueFrom": "arn:aws:ssm:ap-southeast-2:258174056716:parameter/SECRET_ACCESS_KEY"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/medflow-task",
+                    "awslogs-region": "ap-southeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        },
+        {
+            "name": "medflow-ai",
+            "image": "258174056716.dkr.ecr.ap-southeast-2.amazonaws.com/medflow-ai:latest",
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp"
+                },
+                {
+                    "containerPort": 50051,
+                    "hostPort": 50051,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                { "name": "GRPC_HOST", "value": "127.0.0.1" },
+                { "name": "DB_URI", "value": "postgresql://postgres:healthcare@healthcare-db.cdu4ym0ac08t.ap-southeast-2.rds.amazonaws.com:5432/postgres" }
+            ],
+            "secrets": [
+                {
+                    "name": "OPENAI_API_KEY",
+                    "valueFrom": "arn:aws:ssm:ap-southeast-2:258174056716:parameter/OPENAI_API_KEY"
+                },
+                {
+                    "name": "COHERE_API_KEY",
+                    "valueFrom": "arn:aws:ssm:ap-southeast-2:258174056716:parameter/COHERE_API_KEY"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/medflow-task",
+                    "awslogs-region": "ap-southeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ]
+}

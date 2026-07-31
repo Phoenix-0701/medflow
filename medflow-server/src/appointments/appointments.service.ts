@@ -130,6 +130,7 @@ export class AppointmentsService {
           },
         },
         triageSession: true, // Nếu bệnh nhân muốn xem lại kết quả AI chẩn đoán
+        medicalRecord: true, // Lấy bệnh án để bệnh nhân xem chi tiết chẩn đoán và đơn thuốc
       },
       orderBy: {
         startTime: 'desc', // Ca khám mới nhất (hoặc sắp tới) sẽ nổi lên đầu
@@ -215,20 +216,43 @@ export class AppointmentsService {
       );
     }
 
-    // Bảo mật 2 (Business Logic): Bắt buộc ca khám phải hoàn tất mới được chốt bệnh án
-    if (appointment.status !== AppointmentStatus.COMPLETED) {
+    // Bảo mật 2: Không thể cập nhật ca khám đã hủy
+    if (appointment.status === AppointmentStatus.CANCELLED) {
       throw new BadRequestException(
-        'Chỉ có thể lưu kết luận chẩn đoán khi ca khám đã được chuyển sang trạng thái Hoàn tất (COMPLETED).',
+        'Không thể cập nhật bệnh án cho ca khám đã bị hủy.',
       );
     }
 
-    // Tiến hành lưu bệnh án vào Database
-    return this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        diagnosis: dto.diagnosis,
-        prescription: dto.prescription,
-      },
+    // Sử dụng Transaction để vừa chốt ca khám vừa tạo MedicalRecord
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Cập nhật Appointment (tự động chuyển sang COMPLETED)
+      const updatedAppt = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          status: AppointmentStatus.COMPLETED,
+          diagnosis: dto.diagnosis,
+          prescription: dto.prescription,
+        },
+      });
+
+      // 2. Upsert Medical Record (Cho phép bác sĩ cập nhật lại nếu gõ sai)
+      const medicalRecord = await tx.medicalRecord.upsert({
+        where: { appointmentId: appointmentId },
+        create: {
+          appointmentId: appointmentId,
+          patientId: appointment.patientId,
+          clinicalFindings: dto.clinicalFindings,
+          finalDiagnosis: dto.diagnosis,
+          prescription: dto.prescription,
+        },
+        update: {
+          clinicalFindings: dto.clinicalFindings,
+          finalDiagnosis: dto.diagnosis,
+          prescription: dto.prescription,
+        },
+      });
+
+      return { appointment: updatedAppt, medicalRecord };
     });
   }
 
@@ -277,12 +301,15 @@ export class AppointmentsService {
                 fullName: true,
                 phone: true,
                 email: true,
+                avatarUrl: true,
               },
             },
           },
         },
         // Có thể lấy kèm dữ liệu AI Triage nếu có để bác sĩ đọc trước khi khám
         triageSession: true,
+        // Lấy kèm medicalRecord để hiển thị lại thông tin đã nhập nếu ca khám đã COMPLETED
+        medicalRecord: true,
       },
       orderBy: {
         startTime: 'asc', // Luôn sắp xếp từ ca sáng đến ca chiều
@@ -335,5 +362,68 @@ export class AppointmentsService {
 
     // 3. Trả về dữ liệu nếu qua được chốt kiểm tra
     return appointment;
+  }
+
+  // API MỚI: Bác sĩ xem danh sách bệnh nhân
+  async getDoctorPatients(doctorId: string) {
+    const patients = await this.prisma.patientProfile.findMany({
+      where: {
+        appointments: {
+          some: { doctorId: doctorId },
+        },
+      },
+      include: {
+        user: {
+          select: { fullName: true, phone: true, email: true, avatarUrl: true },
+        },
+        appointments: {
+          where: { doctorId: doctorId },
+          orderBy: { startTime: 'desc' },
+          take: 1, // Chỉ lấy ca khám gần nhất
+          include: { triageSession: true },
+        },
+      },
+    });
+
+    // Format lại dữ liệu cho Frontend dễ dùng
+    return patients.map((p) => ({
+      id: p.id,
+      userId: p.userId,
+      user: p.user,
+      gender: p.gender,
+      dateOfBirth: p.dateOfBirth,
+      latestAppointment: p.appointments[0] || null,
+    }));
+  }
+
+  // API ĐÁNH GIÁ BÁC SĨ (DÀNH CHO BỆNH NHÂN)
+  async reviewAppointment(patientId: string, appointmentId: string, rating: number, reviewText?: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('Không tìm thấy ca khám này.');
+    }
+
+    if (appointment.patientId !== patientId) {
+      throw new ForbiddenException('Bạn không có quyền đánh giá ca khám của người khác.');
+    }
+
+    if (appointment.status !== 'COMPLETED') {
+      throw new BadRequestException('Chỉ có thể đánh giá những ca khám đã hoàn tất.');
+    }
+
+    if (appointment.rating) {
+      throw new BadRequestException('Ca khám này đã được đánh giá rồi.');
+    }
+
+    return this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        rating,
+        reviewText,
+      },
+    });
   }
 }

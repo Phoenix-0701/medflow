@@ -20,6 +20,6 @@ async function bootstrap() {
   // === ĐĂNG KÝ INTERCEPTOR TẠI ĐÂY ===
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  await app.listen(3000);
+  await app.listen(4000, '0.0.0.0');
 }
 bootstrap();

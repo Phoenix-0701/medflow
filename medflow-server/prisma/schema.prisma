@@ -42,6 +42,7 @@ model User {
   email     String   @unique
   fullName  String
   phone     String?
+  avatarUrl String?
   role      Role     @default(PATIENT)
   isActive  Boolean  @default(true)
   
@@ -56,14 +57,21 @@ model User {
 model DoctorProfile {
   id          String   @id @default(uuid())
   userId      String   @unique
-  specialty   String   // VD: "Nội khoa", "Da liễu"
-  department  String   // VD: "Khoa Khám Bệnh"
+  specialty         String   // VD: "Nội khoa", "Da liễu"
+  department        String   // VD: "Khoa Khám Bệnh"
+  bio               String?  // Tiểu sử chuyên môn
+  yearsOfExperience Int?     // Số năm kinh nghiệm
+  licenseNumber     String?  // Số giấy phép hành nghề
   
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Quan hệ 1-n
   availabilities DoctorAvailability[]
   appointments   Appointment[]
+  leaves         DoctorLeave[]
+  
+  // Quan hệ 1-1
+  weeklySchedule DoctorWeeklySchedule?
 }
 
 model PatientProfile {
@@ -72,6 +80,8 @@ model PatientProfile {
   dateOfBirth    DateTime?
   gender         String?
   bloodType      String?
+  weight         Float?
+  height         Float?
   allergies      String?  
   medicalHistory String?  // Tiền sử bệnh
   
@@ -131,6 +141,10 @@ model Appointment {
   updatedAt       DateTime          @updatedAt
 
   diagnosis       String?           @db.Text // Kết luận chẩn đoán (Dùng @db.Text để lưu chuỗi dài)
+  
+  rating          Int?              // Điểm đánh giá (1-5)
+  reviewText      String?           @db.Text // Nội dung đánh giá
+
   prescription    String?           @db.Text // Đơn thuốc / Hướng dẫn điều trị
 
   patient         PatientProfile    @relation(fields: [patientId], references: [id])
@@ -159,6 +173,36 @@ model MedicalRecord {
 
   appointment      Appointment    @relation(fields: [appointmentId], references: [id])
   patient          PatientProfile @relation(fields: [patientId], references: [id])
+}
+
+// -----------------------------------------------------------------------------
+// AVAILABILITY & SETTINGS
+// -----------------------------------------------------------------------------
+
+model DoctorWeeklySchedule {
+  id         String   @id @default(uuid())
+  doctorId   String   @unique
+  doctor     DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  
+  monday     Json?
+  tuesday    Json?
+  wednesday  Json?
+  thursday   Json?
+  friday     Json?
+  saturday   Json?
+  sunday     Json?
+}
+
+model DoctorLeave {
+  id         String   @id @default(uuid())
+  doctorId   String
+  doctor     DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  
+  startDate  DateTime
+  endDate    DateTime
+  reason     String
+  
+  createdAt  DateTime @default(now())
 }
 
 // -----------------------------------------------------------------------------

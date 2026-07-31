@@ -12,6 +12,7 @@ interface PublicDoctor {
   user: {
     fullName: string;
     email: string;
+    avatarUrl?: string;
   };
 }
 
@@ -23,10 +24,10 @@ export default function ExpertSection() {
     async function loadDoctors() {
       try {
         // Gọi API Public của backend NestJS
-        const res = await fetch("http://localhost:4000/users/public/doctors?limit=4");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:4000"}/users/public/doctors?limit=4`);
         if (res.ok) {
-          const data = await res.json();
-          setDoctors(data);
+          const json = await res.json();
+          setDoctors(json.data || json);
         }
       } catch (err) {
         console.error("Lỗi lấy danh sách bác sĩ công khai:", err);
@@ -63,10 +64,11 @@ export default function ExpertSection() {
               <div key={doc.id} className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900 transition-all hover:shadow-md">
                 <div className="h-48 w-full bg-gray-200 relative">
                   <Image
-                    src={doc.avatar || "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300"}
+                    src={doc.user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(doc.user?.fullName || "Doctor")}&background=random&size=300`}
                     alt={doc.user?.fullName || "Doctor"}
                     fill
                     className="object-cover"
+                    unoptimized={true}
                   />
                 </div>
                 <div className="p-4">

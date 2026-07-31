@@ -1,40 +1,35 @@
-// app/admin/doctors/AddDoctorModal.tsx
 "use client";
 
 import React, { useState } from "react";
 
-export interface NewDoctorForm {
+export interface NewPatientForm {
   fullName: string;
   email: string;
   phone: string;
-  specialty: string;
-  licenseNumber: string;
-  yearsOfExperience: number;
-  status: "ACTIVE" | "INACTIVE";
-  bio: string;
+  dateOfBirth: string;
+  gender: string;
+  password?: string;
 }
 
-interface AddDoctorModalProps {
+interface AddPatientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: NewDoctorForm) => Promise<void>;
+  onSubmit: (data: NewPatientForm) => Promise<void>;
 }
 
-export default function AddDoctorModal({
+export default function AddPatientModal({
   isOpen,
   onClose,
   onSubmit,
-}: AddDoctorModalProps) {
+}: AddPatientModalProps) {
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<NewDoctorForm>({
+  const [formData, setFormData] = useState<NewPatientForm>({
     fullName: "",
     email: "",
     phone: "",
-    specialty: "",
-    licenseNumber: "",
-    yearsOfExperience: 5,
-    status: "ACTIVE",
-    bio: "",
+    dateOfBirth: "",
+    gender: "Nam",
+    password: "",
   });
 
   if (!isOpen) return null;
@@ -48,11 +43,9 @@ export default function AddDoctorModal({
         fullName: "",
         email: "",
         phone: "",
-        specialty: "",
-        licenseNumber: "",
-        yearsOfExperience: 5,
-        status: "ACTIVE",
-        bio: "",
+        dateOfBirth: "",
+        gender: "Nam",
+        password: "",
       });
       onClose();
     } catch (err) {
@@ -63,13 +56,13 @@ export default function AddDoctorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 overflow-hidden">
         
         {/* Header Modal */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-zinc-800">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Thêm Bác sĩ Mới
+            Thêm Bệnh nhân Mới
           </h2>
           <button
             onClick={onClose}
@@ -145,123 +138,90 @@ export default function AddDoctorModal({
                     />
                   </div>
                 </div>
+                
+                <div className="mt-3">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">
+                    Mật Khẩu <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Mật khẩu tạo cho bệnh nhân (VD: Patient123@)"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-500">Mật khẩu phải dài ít nhất 8 ký tự, gồm số, chữ hoa, chữ thường và ký tự đặc biệt.</p>
+                </div>
               </div>
             </div>
 
             <hr className="border-gray-100 dark:border-zinc-800 my-1" />
 
-            {/* Row 2: Specialty & License */}
+            {/* Row 2: DOB & Gender */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">
-                  Chuyên Khoa <span className="text-rose-500">*</span>
+                  Ngày Sinh <span className="text-rose-500">*</span>
                 </label>
-                <select
+                <input
+                  type="date"
                   required
-                  value={formData.specialty}
+                  value={formData.dateOfBirth}
                   onChange={(e) =>
-                    setFormData({ ...formData, specialty: e.target.value })
+                    setFormData({ ...formData, dateOfBirth: e.target.value })
                   }
                   className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white cursor-pointer"
-                >
-                  <option value="">Chọn chuyên khoa</option>
-                  <option value="Cardiology (Tim mạch)">Cardiology (Tim mạch)</option>
-                  <option value="Neurology (Thần kinh)">Neurology (Thần kinh)</option>
-                  <option value="Dermatology (Da liễu)">Dermatology (Da liễu)</option>
-                  <option value="Pediatrics (Nhi khoa)">Pediatrics (Nhi khoa)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">
-                  Số Giấy Phép Hành Nghề <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nhập số GPHN"
-                  value={formData.licenseNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, licenseNumber: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Row 3: Experience & Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">
-                  Số Năm Kinh Nghiệm
-                </label>
-                <input
-                  type="number"
-                  placeholder="Vd: 10"
-                  value={formData.yearsOfExperience}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      yearsOfExperience: Number(e.target.value),
-                    })
-                  }
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">
-                  Trạng Thái
+                  Giới Tính <span className="text-rose-500">*</span>
                 </label>
                 <select
-                  value={formData.status}
+                  required
+                  value={formData.gender}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      status: e.target.value as "ACTIVE" | "INACTIVE",
-                    })
+                    setFormData({ ...formData, gender: e.target.value })
                   }
                   className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white cursor-pointer"
                 >
-                  <option value="ACTIVE">Đang Công Tác</option>
-                  <option value="INACTIVE">Tạm Khóa / Nghỉ</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
                 </select>
               </div>
-            </div>
-
-            {/* Row 4: Bio */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">
-                Tiểu sử chuyên môn (Tùy chọn)
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Nhập thêm thông tin chuyên môn hoặc ghi chú..."
-                value={formData.bio}
-                onChange={(e) =>
-                  setFormData({ ...formData, bio: e.target.value })
-                }
-                className="w-full rounded-xl border border-gray-200 bg-white p-3.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white resize-none"
-              />
             </div>
 
           </div>
 
           {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="flex items-center justify-end gap-4 px-6 py-4 dark:border-zinc-800 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-blue-800 disabled:opacity-50 transition-all cursor-pointer"
+              className="flex items-center gap-2 rounded-lg bg-[#004b93] px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#003970] disabled:opacity-50 transition-all cursor-pointer"
             >
-              {submitting ? "Đang lưu..." : "💾 Lưu thông tin"}
+              {submitting ? (
+                "Đang lưu..."
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                  </svg>
+                  Lưu thông tin
+                </>
+              )}
             </button>
           </div>
         </form>

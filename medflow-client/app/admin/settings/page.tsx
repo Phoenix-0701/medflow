@@ -18,7 +18,7 @@ export default function SettingsPage() {
           </label>
           <input
             type="text"
-            defaultValue="Hệ thống Y tế MedFlow AI"
+            defaultValue="Hệ thống Y tế BKMed AI"
             className="w-full rounded-xl border border-gray-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
           />
         </div>
@@ -28,7 +28,7 @@ export default function SettingsPage() {
           </label>
           <input
             type="email"
-            defaultValue="admin@medflow.ai"
+            defaultValue="admin@BKMed.ai"
             className="w-full rounded-xl border border-gray-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800"
           />
         </div>

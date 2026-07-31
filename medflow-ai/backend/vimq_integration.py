@@ -4,7 +4,7 @@ import torch
 import json
 import numpy as np
 
-os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+# os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
 from typing import Dict, Any, List
 

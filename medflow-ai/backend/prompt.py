@@ -36,7 +36,7 @@ router_prompt = ChatPromptTemplate.from_messages([
 base_footer = (
     "\n\n---\n"
     "Thông tin trên được hỗ trợ bởi Trí tuệ nhân tạo, chỉ phục vụ mục đích tham khảo, không mang tính chất khuyến nghị y khoa. "
-    "Vui lòng liên hệ bác sĩ để được tham vấn chi tiết bằng cách gọi hotline (84) 19006969 để có giải pháp chính xác."
+    "Vui lòng liên hệ bác sĩ để được tham vấn chi tiết bằng cách gọi hotline (84) 19006969 để có giải pháp chính xác.\n\n"
 )
 
 medflow_departments_info = (
@@ -144,7 +144,7 @@ booking_system_prompt = (
     "The patient wants assistance with BOOKING an appointment, registering for an examination, or agreed to book after a previous consultation.\n\n"
     "Follow this exact conversational flow IN VIETNAMESE:\n"
     "1. Greeting & Enthusiasm: Start with 'Dạ, MedFlow rất sẵn lòng hỗ trợ Anh/Chị đăng ký đặt lịch khám với các chuyên gia hàng đầu ạ!'\n"
-    "2. Booking Link: Provide the direct link to the booking section: [Đăng ký Đặt lịch Khám MedFlow](http://localhost:3000/#expert)\n"
+    "2. Booking Link: Provide the direct link to the booking section: [Đăng ký Đặt lịch Khám MedFlow](/patient/booking)\n"
     "3. Step-by-step Guidance: List the 5 simple steps to complete the appointment booking in a clear, formatted bulleted list:\n"
     "   - Bước 1: Đăng nhập vào tài khoản Bệnh nhân trên hệ thống MedFlow (nếu chưa đăng nhập).\n"
     "   - Bước 2: Nhấn vào đường link đặt lịch ở trên hoặc cuộn đến mục 'Đội ngũ chuyên gia' trên trang chủ.\n"

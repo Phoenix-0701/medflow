@@ -12,8 +12,6 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 export class AvailabilitiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Hàm Pure Logic: Cắt khoảng thời gian thành các Slot nhỏ.
-  // Rất lý tưởng để áp dụng TDD (Test-Driven Development) và kiểm thử biên (Boundary value analysis).
   private generateTimeSlots(
     dateStr: string,
     startStr: string,
@@ -30,13 +28,6 @@ export class AvailabilitiesService {
       throw new BadRequestException('Giờ kết thúc phải lớn hơn giờ bắt đầu.');
     }
 
-    // Nhánh 2: Không cho phép tạo lịch trong quá khứ
-    if (startTime < now) {
-      throw new BadRequestException(
-        'Không thể tạo lịch khám cho thời gian trong quá khứ.',
-      );
-    }
-
     let currentSlotStart = new Date(startTime);
 
     // Vòng lặp sinh khung giờ
@@ -48,10 +39,13 @@ export class AvailabilitiesService {
       // Đảm bảo slot cuối cùng không vượt quá giờ kết thúc ca làm việc
       if (currentSlotEnd > endTime) break;
 
-      slots.push({
-        startTime: currentSlotStart,
-        endTime: currentSlotEnd,
-      });
+      // Chỉ thêm vào danh sách nếu slot bắt đầu trong tương lai
+      if (currentSlotStart >= now) {
+        slots.push({
+          startTime: currentSlotStart,
+          endTime: currentSlotEnd,
+        });
+      }
 
       currentSlotStart = currentSlotEnd; // Nhảy đến slot tiếp theo
     }
@@ -201,6 +195,202 @@ export class AvailabilitiesService {
     return {
       message: 'Đã xóa khung giờ làm việc thành công.',
       deletedSlotId: availabilityId,
+    };
+  }
+
+  // --- API LỊCH LÀM VIỆC CỐ ĐỊNH (WEEKLY SCHEDULE) ---
+  async getWeeklySchedule(doctorId: string) {
+    let schedule = await this.prisma.doctorWeeklySchedule.findUnique({
+      where: { doctorId },
+    });
+
+    if (!schedule) {
+      // Return default empty schedule if none exists
+      return {
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+        sunday: [],
+      };
+    }
+    return schedule;
+  }
+
+  async upsertWeeklySchedule(doctorId: string, dto: any) {
+    const schedule = await this.prisma.doctorWeeklySchedule.upsert({
+      where: { doctorId },
+      update: {
+        monday: dto.monday || [],
+        tuesday: dto.tuesday || [],
+        wednesday: dto.wednesday || [],
+        thursday: dto.thursday || [],
+        friday: dto.friday || [],
+        saturday: dto.saturday || [],
+        sunday: dto.sunday || [],
+      },
+      create: {
+        doctorId,
+        monday: dto.monday || [],
+        tuesday: dto.tuesday || [],
+        wednesday: dto.wednesday || [],
+        thursday: dto.thursday || [],
+        friday: dto.friday || [],
+        saturday: dto.saturday || [],
+        sunday: dto.sunday || [],
+      },
+    });
+
+    // Tự động sinh slot cho 30 ngày tới
+    const today = new Date();
+    const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    // Lấy các slot hiện tại để check overlap
+    const existingSlots = await this.prisma.doctorAvailability.findMany({
+      where: {
+        doctorId: doctorId,
+        startTime: { gte: new Date(today.setHours(0,0,0,0)) },
+      },
+    });
+
+    // Lấy các ngày nghỉ để tránh sinh slot đè lên ngày nghỉ
+    const leaves = await this.prisma.doctorLeave.findMany({
+      where: { doctorId, endDate: { gte: new Date() } }
+    });
+
+    const newSlotsToInsert = [];
+
+    for (let i = 0; i < 30; i++) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + i);
+      const dayName = daysMap[targetDate.getDay()];
+      
+      const daySlotsConfig = (schedule as any)[dayName] as any[];
+      if (!daySlotsConfig || daySlotsConfig.length === 0) continue;
+
+      // format YYYY-MM-DD
+      const yyyy = targetDate.getFullYear();
+      const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(targetDate.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      
+      for (const config of daySlotsConfig) {
+        try {
+          const generated = this.generateTimeSlots(dateStr, config.start, config.end, 30);
+          
+          for (const newSlot of generated) {
+            // Check overlap với ngày nghỉ
+            const inLeave = leaves.some((leave) => 
+              newSlot.startTime >= leave.startDate && 
+              newSlot.startTime <= new Date(leave.endDate.getTime() + 86400000)
+            );
+            if (inLeave) continue;
+
+            // Check overlap với slot đã có
+            const isOverlap = existingSlots.some(
+              (existing) =>
+                (newSlot.startTime >= existing.startTime && newSlot.startTime < existing.endTime) ||
+                (newSlot.endTime > existing.startTime && newSlot.endTime <= existing.endTime) ||
+                (newSlot.startTime <= existing.startTime && newSlot.endTime >= existing.endTime)
+            );
+
+            if (!isOverlap) {
+              newSlotsToInsert.push({
+                doctorId: doctorId,
+                startTime: newSlot.startTime,
+                endTime: newSlot.endTime,
+                isBooked: false,
+              });
+            }
+          }
+        } catch(e) {
+          // Bỏ qua lỗi (vd: giờ kết thúc < giờ bắt đầu, hoặc thời gian trong quá khứ)
+        }
+      }
+    }
+
+    if (newSlotsToInsert.length > 0) {
+      await this.prisma.doctorAvailability.createMany({
+        data: newSlotsToInsert,
+      });
+    }
+
+    return {
+      message: 'Đã cập nhật lịch làm việc cố định và tự động sinh ca khám cho 30 ngày tới.',
+      schedule,
+    };
+  }
+
+  // --- API NGÀY NGHỈ ĐỘT XUẤT (LEAVES) ---
+  async getLeaves(doctorId: string) {
+    return this.prisma.doctorLeave.findMany({
+      where: { doctorId },
+      orderBy: { startDate: 'desc' },
+    });
+  }
+
+  async createLeave(doctorId: string, dto: any) {
+    const startDate = new Date(dto.startDate);
+    const endDate = new Date(dto.endDate);
+    
+    // Đảm bảo startDate <= endDate
+    if (startDate > endDate) {
+      throw new BadRequestException('Ngày kết thúc phải sau ngày bắt đầu.');
+    }
+
+    // 1. Tạo Leave
+    const leave = await this.prisma.doctorLeave.create({
+      data: {
+        doctorId,
+        startDate,
+        endDate,
+        reason: dto.reason,
+      },
+    });
+
+    // 2. Logic xóa các slot chưa được đặt trong khoảng thời gian nghỉ
+    // Mục tiêu: Không cho bệnh nhân thấy các khung giờ này
+    await this.prisma.doctorAvailability.deleteMany({
+      where: {
+        doctorId,
+        isBooked: false, // Chỉ xóa các slot CHƯA CÓ người đặt
+        startTime: {
+          gte: startDate,
+        },
+        endTime: {
+          lte: new Date(endDate.getTime() + 24 * 60 * 60 * 1000), // đến hết ngày endDate
+        },
+      },
+    });
+
+    return {
+      message: 'Đã thêm lịch nghỉ thành công. Hệ thống đã tự động gỡ các ca khám chưa được đặt trong thời gian này.',
+      leave,
+    };
+  }
+
+  async deleteLeave(doctorId: string, leaveId: string) {
+    const leave = await this.prisma.doctorLeave.findUnique({
+      where: { id: leaveId },
+    });
+
+    if (!leave) {
+      throw new NotFoundException('Không tìm thấy lịch nghỉ này.');
+    }
+
+    if (leave.doctorId !== doctorId) {
+      throw new ForbiddenException('Bạn không có quyền xóa lịch nghỉ của bác sĩ khác.');
+    }
+
+    await this.prisma.doctorLeave.delete({
+      where: { id: leaveId },
+    });
+
+    return {
+      message: 'Đã hủy ngày nghỉ thành công.',
+      deletedLeaveId: leaveId,
     };
   }
 }

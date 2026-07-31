@@ -82,4 +82,80 @@ export class AvailabilitiesController {
       availabilityId,
     );
   }
+
+  // --- API LỊCH LÀM VIỆC CỐ ĐỊNH ---
+  @UseGuards(JwtAuthGuard)
+  @Get('weekly-schedule')
+  async getWeeklySchedule(@CurrentUser() user: User) {
+    if (user.role !== Role.DOCTOR) throw new ForbiddenException();
+    
+    const doctorProfile = await this.availabilitiesService['prisma'].doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!doctorProfile) throw new ForbiddenException('Không tìm thấy hồ sơ bác sĩ.');
+    
+    return this.availabilitiesService.getWeeklySchedule(doctorProfile.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('weekly-schedule')
+  async upsertWeeklySchedule(
+    @CurrentUser() user: User,
+    @Body() dto: any, // Using any for simplicity here
+  ) {
+    if (user.role !== Role.DOCTOR) throw new ForbiddenException();
+    
+    const doctorProfile = await this.availabilitiesService['prisma'].doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!doctorProfile) throw new ForbiddenException('Không tìm thấy hồ sơ bác sĩ.');
+    
+    return this.availabilitiesService.upsertWeeklySchedule(doctorProfile.id, dto);
+  }
+
+  // --- API LỊCH ĐÃ KHÓA (NGÀY NGHỈ) ---
+  @UseGuards(JwtAuthGuard)
+  @Get('leaves')
+  async getLeaves(@CurrentUser() user: User) {
+    if (user.role !== Role.DOCTOR) throw new ForbiddenException();
+    
+    const doctorProfile = await this.availabilitiesService['prisma'].doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!doctorProfile) throw new ForbiddenException('Không tìm thấy hồ sơ bác sĩ.');
+    
+    return this.availabilitiesService.getLeaves(doctorProfile.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('leaves')
+  async createLeave(
+    @CurrentUser() user: User,
+    @Body() dto: any,
+  ) {
+    if (user.role !== Role.DOCTOR) throw new ForbiddenException();
+    
+    const doctorProfile = await this.availabilitiesService['prisma'].doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!doctorProfile) throw new ForbiddenException('Không tìm thấy hồ sơ bác sĩ.');
+    
+    return this.availabilitiesService.createLeave(doctorProfile.id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('leaves/:id')
+  async deleteLeave(
+    @CurrentUser() user: User,
+    @Param('id') leaveId: string,
+  ) {
+    if (user.role !== Role.DOCTOR) throw new ForbiddenException();
+    
+    const doctorProfile = await this.availabilitiesService['prisma'].doctorProfile.findUnique({
+      where: { userId: user.id },
+    });
+    if (!doctorProfile) throw new ForbiddenException('Không tìm thấy hồ sơ bác sĩ.');
+    
+    return this.availabilitiesService.deleteLeave(doctorProfile.id, leaveId);
+  }
 }
