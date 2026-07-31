@@ -1,20 +1,10 @@
----
-title: "Bản đề xuất"
-date: 2024-01-01
-weight: 2
-chapter: false
-pre: " <b> 2. </b> "
----
-
-Tại phần này, bạn sẽ thấy bản tóm tắt đề xuất dự án phát triển hệ thống Y tế số, bao gồm mục tiêu, kiến trúc hạ tầng AWS Cloud, luồng nghiệp vụ cốt lõi và ước tính ngân sách vận hành.
-
 # Smart Healthcare AI Triage & Appointment Booking Platform  
 ## Giải pháp Cloud-native hỗ trợ Sàng lọc Bệnh Y khoa qua AI và Quản lý Lịch hẹn Trực tuyến  
 
-### 1. Tóm tắt điều hành  
+### 1. Tóm tắt chung  
 Smart Healthcare Platform được thiết kế nhằm hiện đại hóa quy trình tiếp nhận, giải đáp thắc mắc y tế ban đầu và hỗ trợ đặt lịch khám bệnh trực tuyến. Hệ thống ứng dụng kiến trúc **Generative AI & RAG (Retrieval-Augmented Generation)** kết hợp giữa **AWS Bedrock Knowledge Base**, mô hình trích xuất thực thể y tế **ViMQ** và LLM **GPT-4o-mini**, đồng thời hỗ trợ lưu trữ **Báo cáo tóm tắt cuộc trò chuyện (Pre-consultation Report)**. Nền tảng được xây dựng theo kiến trúc Cloud-native trên hạ tầng **AWS Cloud** (Cognito, EC2, RDS PostgreSQL, S3, CloudWatch), kết hợp hệ thống giám sát LLM chuyên dụng (**Langfuse**), phục vụ nhu cầu truy cập từ Bệnh nhân, Bác sĩ và Quản trị viên.  
 
-### 2. Tuyên bố vấn đề  
+### 2. Đặt vấn đề
 #### Vấn đề hiện tại  
 Các cơ sở y tế hiện nay thường gặp tình trạng quá tải tại quầy tiếp đón do bệnh nhân mất nhiều thời gian hỏi đáp thông tin cơ bản. Quy trình đặt lịch hẹn truyền thống qua điện thoại hoặc tại quầy dễ gây ra tình trạng trùng lịch (Double-booking) và thời gian chờ đợi kéo dài. Về phía Bác sĩ, việc theo dõi danh sách lịch hẹn và thông tin bệnh nhân đăng ký khám còn thủ công, thiếu sự tập trung.  
 
@@ -39,7 +29,7 @@ Nền tảng cung cấp giải pháp toàn diện trải qua các giai đoạn n
 ### 3. Kiến trúc giải pháp  
 Hệ thống sử dụng kiến trúc Web Multi-tier kết hợp dịch vụ AI Hybrid (Cloud Services + External SaaS + Local Host Services).  
 
-![Smart Healthcare AI Architecture](/images/2-Proposal/architect-diagram.png)
+![Smart Healthcare AI Architecture](/architect-diagram.png)
 
 #### Dịch vụ AWS & Công nghệ sử dụng  
 - *Amazon Cognito*: Quản lý định danh, đăng nhập/đăng ký, phân quyền RBAC cho Bệnh nhân, Bác sĩ và Admin.
