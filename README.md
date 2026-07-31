@@ -29,7 +29,7 @@ Nền tảng cung cấp giải pháp toàn diện trải qua các giai đoạn n
 ### 3. Kiến trúc giải pháp  
 Hệ thống sử dụng kiến trúc Web Multi-tier kết hợp dịch vụ AI Hybrid (Cloud Services + External SaaS + Local Host Services).  
 
-![Smart Healthcare AI Architecture](/architect-diagram.png)
+![Smart Healthcare AI Architecture](pipeline.png)
 
 #### Dịch vụ AWS & Công nghệ sử dụng  
 - *Amazon Cognito*: Quản lý định danh, đăng nhập/đăng ký, phân quyền RBAC cho Bệnh nhân, Bác sĩ và Admin.
